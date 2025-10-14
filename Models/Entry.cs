@@ -1,11 +1,11 @@
 
-
+using Microsoft.AspNetCore.Identity;
 namespace FinalCapstone.Models
 {
     public class Entry
     {
         public int Id { get; set; }
-        public int UserId { get; set; }
+        public string UserId { get; set; }
         public string Title { get; set; }
         public string Content { get; set; }
         public string Recipient { get; set; }

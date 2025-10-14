@@ -1,9 +1,11 @@
+
 using FinalCapstone.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace FinalCapstone.Data
 {
-    public class FinalCapstoneDbContext : DbContext
+    public class FinalCapstoneDbContext : IdentityDbContext<User>
     {
         public DbSet<User> Users { get; set; }
         public DbSet<Entry> Entries { get; set; }
@@ -29,10 +31,10 @@ namespace FinalCapstone.Data
             .IsUnique();
 
             modelBuilder.Entity<EntryEmotion>()
-            .HasKey(ee => new { ee EntryId, ee.EmotionId });
+            .HasKey(ee => new { ee.EntryId, ee.EmotionId });
 
             modelBuilder.Entity<Entry>()
-            .HasOne(e =.e.User)
+            .HasOne(e => e.User)
             .WithMany(u => u.Entries)
             .HasForeignKey(e => e.UserId)
             .OnDelete(DeleteBehavior.Cascade);
@@ -54,11 +56,6 @@ namespace FinalCapstone.Data
             .WithMany(e => e.EntryEmotions)
             .HasForeignKey(ee => ee.EmotionId)
             .OnDelete(DeleteBehavior.Cascade);
-
-
-
-
-
-
+        }
     }
 }
