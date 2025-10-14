@@ -79,6 +79,7 @@ builder.Services.AddControllers()
     });
 
 var app = builder.Build();
+await DbInitializer.Initialize(app.Services);
 
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
@@ -95,5 +96,8 @@ app.UseAuthorization();
 
 // Map API endpoints
 app.MapAuthEndpoints();
+app.MapEntryEndpoints();
+app.MapEntryTypeEndpoints();
+app.MapEmotionEndpoints();
 
 app.Run();
