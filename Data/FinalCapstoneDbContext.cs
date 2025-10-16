@@ -7,11 +7,11 @@ namespace FinalCapstone.Data
 {
     public class FinalCapstoneDbContext : IdentityDbContext<User>
     {
-        public DbSet<User> Users { get; set; }
-        public DbSet<Entry> Entries { get; set; }
-        public DbSet<EntryType> EntryTypes { get; set; }
-        public DbSet<Emotion> Emotions { get; set; }
-        public DbSet<EntryEmotion> EntryEmotions { get; set; }
+        public DbSet<User> Users { get; set; } = null!;
+        public DbSet<Entry> Entries { get; set; } = null!;
+        public DbSet<EntryType> EntryTypes { get; set; } = null!;
+        public DbSet<Emotion> Emotions { get; set; } = null!;
+        public DbSet<EntryEmotion> EntryEmotions { get; set; } = null!;
 
         public FinalCapstoneDbContext(DbContextOptions<FinalCapstoneDbContext> options) : base(options)
         { }

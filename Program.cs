@@ -64,9 +64,10 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.WithOrigins("http://localhost:3000", "http://localhost:5173") // Add your frontend URLs
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials(); // ✅ Enable credentials (cookies)
     });
 });
 
@@ -99,5 +100,7 @@ app.MapAuthEndpoints();
 app.MapEntryEndpoints();
 app.MapEntryTypeEndpoints();
 app.MapEmotionEndpoints();
+app.MapUserEndpoints();
+app.MapAdminEndpoints();
 
 app.Run();

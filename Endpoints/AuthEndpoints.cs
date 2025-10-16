@@ -92,7 +92,7 @@ public static class AuthEndpoints
             var userDto = new UserDto
             {
                 Id = user.Id,
-                Email = user.Email,
+                Email = user.Email ?? string.Empty,
                 DisplayName = user.DisplayName,
                 IsAdmin = user.IsAdmin
             };
@@ -127,7 +127,7 @@ public static class AuthEndpoints
             var userDto = new UserDto
             {
                 Id = user.Id,
-                Email = user.Email,
+                Email = user.Email ?? string.Empty,
                 DisplayName = user.DisplayName,
                 IsAdmin = user.IsAdmin
             };
