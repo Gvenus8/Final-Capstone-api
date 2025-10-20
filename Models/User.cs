@@ -11,7 +11,6 @@ namespace FinalCapstone.Models
 
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
 
-        // Navigation property
         public List<Entry> Entries { get; set; } = new List<Entry>();
     }
 }

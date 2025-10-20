@@ -8,7 +8,6 @@ public static class EntryTypeEndpoints
 {
     public static void MapEntryTypeEndpoints(this WebApplication app)
     {
-        // Get all entry types
         app.MapGet("/api/entrytypes", async (FinalCapstoneDbContext db) =>
         {
             var entryTypes = await db.EntryTypes

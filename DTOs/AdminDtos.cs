@@ -2,9 +2,9 @@ namespace FinalCapstone.DTOs;
 
 public class AdminUserViewDto
 {
-    public string Id { get; set; }
-    public string Email { get; set; }
-    public string DisplayName { get; set; }
+    public string Id { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string DisplayName { get; set; } = string.Empty;
     public bool IsAdmin { get; set; }
     public DateTime CreatedDate { get; set; }
     public int EntryCount { get; set; }
@@ -13,9 +13,9 @@ public class AdminUserViewDto
 
 public class AdminUserDetailDto
 {
-    public string Id { get; set; }
-    public string Email { get; set; }
-    public string DisplayName { get; set; }
+    public string Id { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string DisplayName { get; set; } = string.Empty;
     public bool IsAdmin { get; set; }
     public DateTime CreatedDate { get; set; }
     public int EntryCount { get; set; }
@@ -30,7 +30,7 @@ public class AdminStatisticsDto
     
 public class EntryTypeStatsDto
 {
-    public string Type { get; set; }
+    public string Type { get; set; } = string.Empty;
     public int Count { get; set; }
 }
 

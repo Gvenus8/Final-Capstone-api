@@ -12,7 +12,6 @@ public static class EntryEndpoints
 {
     public static void MapEntryEndpoints(this WebApplication app)
     {
-        // Get all entries for current user (paginated)
         app.MapGet("/api/entries", async (
             ClaimsPrincipal user,
             FinalCapstoneDbContext db,
@@ -25,12 +24,10 @@ public static class EntryEndpoints
                 return Results.Unauthorized();
             }
 
-            // Get total count for pagination
             var totalCount = await db.Entries
                 .Where(e => e.UserId == userId)
                 .CountAsync();
 
-            // Get paginated entries
             var entries = await db.Entries
                 .Where(e => e.UserId == userId)
                 .OrderByDescending(e => e.CreatedAt)
@@ -41,7 +38,6 @@ public static class EntryEndpoints
                 .ThenInclude(ee => ee.Emotion)
                 .ToListAsync();
 
-            // Map to DTOs
             var entryDtos = entries.Select(e => new EntryDto
             {
                 Id = e.Id,
@@ -73,7 +69,6 @@ public static class EntryEndpoints
             return Results.Ok(response);
         }).RequireAuthorization();
 
-        // Get single entry by ID
         app.MapGet("/api/entries/{id}", async (
             int id,
             ClaimsPrincipal user,
@@ -96,7 +91,6 @@ public static class EntryEndpoints
                 return Results.NotFound();
             }
 
-            // Check if user owns this entry
             if (entry.UserId != userId)
             {
                 return Results.Forbid();
@@ -124,7 +118,6 @@ public static class EntryEndpoints
             return Results.Ok(entryDto);
         }).RequireAuthorization();
 
-        // Create new entry
         app.MapPost("/api/entries", async (
             [FromBody] CreateEntryDto dto,
             ClaimsPrincipal user,
@@ -136,7 +129,6 @@ public static class EntryEndpoints
                 return Results.Unauthorized();
             }
 
-            // Validate required fields
             if (string.IsNullOrWhiteSpace(dto.Title) ||
                 string.IsNullOrWhiteSpace(dto.Content) ||
                 string.IsNullOrWhiteSpace(dto.Recipient) ||
@@ -146,7 +138,6 @@ public static class EntryEndpoints
                 return Results.BadRequest("All fields are required, including at least one emotion.");
             }
 
-            // Create entry
             var entry = new Entry
             {
                 UserId = userId,
@@ -160,7 +151,6 @@ public static class EntryEndpoints
             db.Entries.Add(entry);
             await db.SaveChangesAsync();
 
-            // Add emotions
             foreach (var emotionId in dto.EmotionIds)
             {
                 var entryEmotion = new EntryEmotion
@@ -173,7 +163,6 @@ public static class EntryEndpoints
 
             await db.SaveChangesAsync();
 
-            // Fetch the created entry with all related data
             var createdEntry = await db.Entries
                 .Include(e => e.EntryType)
                 .Include(e => e.EntryEmotions)
@@ -202,7 +191,6 @@ public static class EntryEndpoints
             return Results.Created($"/api/entries/{entry.Id}", entryDto);
         }).RequireAuthorization();
 
-        // Update entry
         app.MapPut("/api/entries/{id}", async (
             int id,
             [FromBody] UpdateEntryDto dto,
@@ -221,33 +209,29 @@ public static class EntryEndpoints
                 return Results.NotFound();
             }
 
-            // Check if user owns this entry
+           
             if (entry.UserId != userId)
             {
                 return Results.Forbid();
             }
 
-            // Validate required fields
             if (string.IsNullOrWhiteSpace(dto.Title) ||
                 string.IsNullOrWhiteSpace(dto.Content) ||
                 string.IsNullOrWhiteSpace(dto.Recipient) ||
                 dto.EntryTypeId <= 0 ||
                 dto.EmotionIds == null || dto.EmotionIds.Count == 0)
             {
-                return Results.BadRequest("All fields are required, including at least one emotion.");
+                return Results.BadRequest("All fields are required");
             }
 
-            // Update entry fields
             entry.Title = dto.Title;
             entry.Content = dto.Content;
             entry.Recipient = dto.Recipient;
             entry.EntryTypeId = dto.EntryTypeId;
 
-            // Remove old emotions
             var oldEmotions = db.EntryEmotions.Where(ee => ee.EntryId == id);
             db.EntryEmotions.RemoveRange(oldEmotions);
 
-            // Add new emotions
             foreach (var emotionId in dto.EmotionIds)
             {
                 var entryEmotion = new EntryEmotion
@@ -260,7 +244,7 @@ public static class EntryEndpoints
 
             await db.SaveChangesAsync();
 
-            // Fetch updated entry
+  
             var updatedEntry = await db.Entries
                 .Include(e => e.EntryType)
                 .Include(e => e.EntryEmotions)
@@ -289,7 +273,6 @@ public static class EntryEndpoints
             return Results.Ok(entryDto);
         }).RequireAuthorization();
 
-        // Delete entry
         app.MapDelete("/api/entries/{id}", async (
             int id,
             ClaimsPrincipal user,
@@ -308,7 +291,7 @@ public static class EntryEndpoints
                 return Results.NotFound();
             }
 
-            // Check if user owns entry or is admin
+         
             var currentUser = await userManager.FindByIdAsync(userId);
             var isAdmin = await userManager.IsInRoleAsync(currentUser, "Admin");
 
@@ -317,11 +300,72 @@ public static class EntryEndpoints
                 return Results.Forbid();
             }
 
-            // Delete entry (cascade deletes EntryEmotions)
+            
             db.Entries.Remove(entry);
             await db.SaveChangesAsync();
 
             return Results.NoContent();
         }).RequireAuthorization();
+        app.MapGet("/api/emotions/stats", async (FinalCapstoneDbContext db, ClaimsPrincipal user) =>
+    {
+        // Get the current user's ID from the JWT token
+        var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Results.Unauthorized();
+        }
+
+        // Get all user's entries with their emotions
+        var userEntries = await db.Entries
+            .Where(e => e.UserId == userId)
+            .Include(e => e.EntryEmotions)
+                .ThenInclude(ee => ee.Emotion)
+            .ToListAsync();
+
+        // Count emotions in memory
+        var emotionCounts = new Dictionary<string, int>();
+
+        foreach (var entry in userEntries)
+        {
+            foreach (var entryEmotion in entry.EntryEmotions)
+            {
+                var emotionName = entryEmotion.Emotion.EmotionName;
+
+                if (emotionCounts.ContainsKey(emotionName))
+                {
+                    emotionCounts[emotionName]++;
+                }
+                else
+                {
+                    emotionCounts[emotionName] = 1;
+                }
+            }
+        }
+
+        // Convert to DTO list and sort
+        var emotionStats = emotionCounts
+            .Select(kvp => new EmotionStatDto
+            {
+                Emotion = kvp.Key,
+                Count = kvp.Value
+            })
+            .OrderByDescending(stat => stat.Count)
+            .ToList();
+
+        return Results.Ok(emotionStats);
+    }).RequireAuthorization();
+        app.MapGet("/api/entries/count", async (FinalCapstoneDbContext db, ClaimsPrincipal user) =>
+    {
+        var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Results.Unauthorized();
+        }
+
+        var count = await db.Entries.CountAsync(e => e.UserId == userId);
+        return Results.Ok(new { count });
+    }).RequireAuthorization();
     }
 }

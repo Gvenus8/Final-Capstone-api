@@ -3,6 +3,7 @@ using FinalCapstone.DTOs;
 using Microsoft.EntityFrameworkCore;
 
 
+
 namespace FinalCapstone.Endpoints;
 
 public static class EmotionEndpoints
@@ -23,5 +24,6 @@ public static class EmotionEndpoints
 
             return Results.Ok(emotionDtos);
         }).RequireAuthorization();
+        
     }
 }

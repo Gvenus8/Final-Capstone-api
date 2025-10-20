@@ -8,16 +8,16 @@ using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add DbContext
+
 builder.Services.AddDbContext<FinalCapstoneDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("CapstoneDbConnectionString"))
 );
 
-// Configure Identity
+
 builder.Services
     .AddIdentity<User, IdentityRole>(options =>
     {
-        // Password requirements
+       
         options.Password.RequireDigit = true;
         options.Password.RequiredLength = 8;
         options.Password.RequireLowercase = true;
@@ -28,7 +28,7 @@ builder.Services
 
 
 
-// Configure the Identity cookie options
+
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.Cookie.Name = "FinalCapstoneAuth";
@@ -37,7 +37,7 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.Cookie.SameSite = SameSiteMode.Lax;
     options.SlidingExpiration = true;
 
-    // Prevent redirects - return status codes instead
+
     options.Events = new CookieAuthenticationEvents
     {
         OnRedirectToLogin = context =>
@@ -53,25 +53,25 @@ builder.Services.ConfigureApplicationCookie(options =>
     };
 });
 
-// Configure authorization policies
+
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
 });
 
-// Configure CORS
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
     {
-        policy.WithOrigins("http://localhost:3000", "http://localhost:5173") // Add your frontend URLs
+        policy.WithOrigins("http://localhost:3000", "http://localhost:5173")
               .AllowAnyHeader()
               .AllowAnyMethod()
-              .AllowCredentials(); // ✅ Enable credentials (cookies)
+              .AllowCredentials(); 
     });
 });
 
-// Configure JSON serialization
+
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -82,20 +82,19 @@ builder.Services.AddControllers()
 var app = builder.Build();
 await DbInitializer.Initialize(app.Services);
 
-// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
 }
 
-// Use CORS middleware BEFORE authentication
+
 app.UseCors("AllowAll");
 
-// Add authentication middleware
+
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Map API endpoints
+
 app.MapAuthEndpoints();
 app.MapEntryEndpoints();
 app.MapEntryTypeEndpoints();

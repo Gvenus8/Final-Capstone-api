@@ -5,4 +5,9 @@ namespace FinalCapstone.DTOs
         public int Id { get; set; }
         public string EmotionName { get; set; }
     }
+    public class EmotionStatDto
+    {
+        public string Emotion { get; set; }
+        public int Count { get; set; }
+    }
 }
